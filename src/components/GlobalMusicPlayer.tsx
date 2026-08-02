@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, X } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, X, GripVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const FALLBACK_ALBUM_ART = 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=300';
@@ -12,6 +12,25 @@ export const GlobalMusicPlayer: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const [constraints, setConstraints] = useState({ left: -300, right: 10, top: -600, bottom: 10 });
+
+  useEffect(() => {
+    const updateConstraints = () => {
+      const padding = 16;
+      const buttonWidth = 60;
+      setConstraints({
+        left: -(window.innerWidth - buttonWidth - padding * 2),
+        right: 10,
+        top: -(window.innerHeight - buttonWidth - padding * 2),
+        bottom: 10,
+      });
+    };
+    updateConstraints();
+    window.addEventListener('resize', updateConstraints);
+    return () => window.removeEventListener('resize', updateConstraints);
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -60,7 +79,17 @@ export const GlobalMusicPlayer: React.FC = () => {
   if (!currentTrack) return null;
 
   return (
-    <div className="fixed bottom-16 right-3 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end">
+    <motion.div
+      drag
+      dragMomentum={false}
+      dragElastic={0.08}
+      dragConstraints={constraints}
+      onDragStart={() => setIsDragging(true)}
+      onDragEnd={() => {
+        setTimeout(() => setIsDragging(false), 120);
+      }}
+      className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 z-50 flex flex-col items-end touch-none select-none"
+    >
       <audio
         ref={audioRef}
         src={currentTrack.file_url}
@@ -75,7 +104,8 @@ export const GlobalMusicPlayer: React.FC = () => {
             initial={{ opacity: 0, scale: 0.85, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 10 }}
-            className="mb-3 bg-white/95 backdrop-blur-2xl border border-white/90 shadow-2xl rounded-3xl p-4 w-[280px] sm:w-[320px] text-[#5C3A4D] space-y-3"
+            className="mb-3 bg-white/95 backdrop-blur-2xl border border-white/90 shadow-2xl rounded-3xl p-4 w-[280px] sm:w-[320px] text-[#5C3A4D] space-y-3 cursor-default"
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-pink-100 pb-2">
               <div className="flex items-center gap-2">
@@ -185,26 +215,37 @@ export const GlobalMusicPlayer: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Compact Floating Music Logo Button (FAB) */}
-      <motion.button
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="relative w-12 h-12 rounded-full bg-[#EC407A] text-white shadow-xl shadow-[#EC407A]/30 flex items-center justify-center border-2 border-white transition-all group"
-        aria-label="Music Player Toggle"
-      >
-        {isPlaying && (
-          <span className="absolute -inset-1 rounded-full bg-[#EC407A]/40 animate-ping opacity-75" />
-        )}
-        <Music size={20} className={isPlaying ? 'animate-bounce' : ''} />
-        
-        {/* Status indicator dot */}
-        <span
-          className={`absolute top-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${
-            isPlaying ? 'bg-emerald-400' : 'bg-pink-300'
-          }`}
-        />
-      </motion.button>
-    </div>
+      {/* Compact Draggable Floating Music Logo Button (FAB) */}
+      <div className="relative group cursor-grab active:cursor-grabbing flex items-center gap-1 bg-white/80 backdrop-blur-md p-1 rounded-full border border-pink-200/80 shadow-xl">
+        <div className="pl-1 text-pink-300 group-hover:text-[#EC407A] transition hidden sm:block">
+          <GripVertical size={14} />
+        </div>
+
+        <motion.button
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.94 }}
+          onClick={() => {
+            if (!isDragging) {
+              setIsExpanded(!isExpanded);
+            }
+          }}
+          className="relative w-12 h-12 rounded-full bg-[#EC407A] text-white shadow-md flex items-center justify-center transition-all"
+          aria-label="Music Player Toggle"
+        >
+          {isPlaying && (
+            <span className="absolute -inset-1 rounded-full bg-[#EC407A]/40 animate-ping opacity-75 pointer-events-none" />
+          )}
+          <Music size={20} className={isPlaying ? 'animate-bounce' : ''} />
+          
+          {/* Status indicator dot */}
+          <span
+            className={`absolute top-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${
+              isPlaying ? 'bg-emerald-400' : 'bg-pink-300'
+            }`}
+          />
+        </motion.button>
+      </div>
+    </motion.div>
   );
 };
+
