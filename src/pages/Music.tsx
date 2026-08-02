@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { useApp } from "../context/AppContext";
-import { MusicTrack } from "../types";
-import { fetchWithFallback, uploadFileWithFallback } from "../lib/storage";
-import { isSupabaseConfigured, getSupabaseClient } from "../lib/supabase";
+import React, { useEffect, useState } from 'react';
+import { useApp } from '../context/AppContext';
+import { MusicTrack } from '../types';
+import { fetchWithFallback, uploadFileWithFallback } from '../lib/storage';
+import { isSupabaseConfigured, getSupabaseClient } from '../lib/supabase';
 import {
   Music,
   Play,
@@ -18,43 +18,57 @@ import {
   Upload,
   X,
   Edit2,
-} from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
-const STORAGE_KEY_MUSIC = "sabrianisa_music";
+const STORAGE_KEY_MUSIC = 'sabrianisa_music';
 
-const defaultMusicTracks: MusicTrack[] = [];
+const FALLBACK_ALBUM_ART = 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=500';
+
+const defaultMusicTracks: MusicTrack[] = [
+  {
+    id: 1,
+    title: 'Ceritanya Jatuh Cinta',
+    artist: 'Aku Jeje',
+    file_url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    album_art: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=500',
+    duration: '03:30',
+    favorite: 1,
+  },
+  {
+    id: 2,
+    title: 'Anugerah Terindah',
+    artist: 'Sabrianisa',
+    file_url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a7315b.mp3',
+    album_art: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500',
+    duration: '04:12',
+    favorite: 1,
+  },
+];
 
 export const MusicPage: React.FC = () => {
-  const {
-    currentTrack,
-    isPlaying,
-    playTrack,
-    togglePlay,
-    nextTrack,
-    prevTrack,
-    playlist,
-    setPlaylist,
-  } = useApp();
+  const { currentTrack, isPlaying, playTrack, togglePlay, nextTrack, prevTrack, playlist, setPlaylist } =
+    useApp();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   // Upload & Edit state
   const [editingTrack, setEditingTrack] = useState<MusicTrack | null>(null);
-  const [title, setTitle] = useState("");
-  const [artist, setArtist] = useState("");
-  const [albumArt, setAlbumArt] = useState("");
+  const [title, setTitle] = useState('');
+  const [artist, setArtist] = useState('');
+  const [albumArt, setAlbumArt] = useState('');
   const [musicFile, setMusicFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const fetchTracks = () => {
-    fetchWithFallback<MusicTrack[]>(
-      "/api/music",
-      STORAGE_KEY_MUSIC,
-      [],
-      "music",
-    )
-      .then((data) => setPlaylist(data))
-      .catch((err) => console.error(err));
+    fetchWithFallback<MusicTrack[]>('/api/music', STORAGE_KEY_MUSIC, defaultMusicTracks, 'music')
+      .then((data) => {
+        const finalData = data && data.length > 0 ? data : defaultMusicTracks;
+        setPlaylist(finalData);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (playlist.length === 0) setPlaylist(defaultMusicTracks);
+      });
   };
 
   useEffect(() => {
@@ -63,9 +77,9 @@ export const MusicPage: React.FC = () => {
 
   const openAddModal = () => {
     setEditingTrack(null);
-    setTitle("");
-    setArtist("");
-    setAlbumArt("");
+    setTitle('');
+    setArtist('');
+    setAlbumArt('');
     setMusicFile(null);
     setIsUploadOpen(true);
   };
@@ -73,8 +87,8 @@ export const MusicPage: React.FC = () => {
   const openEditModal = (track: MusicTrack) => {
     setEditingTrack(track);
     setTitle(track.title);
-    setArtist(track.artist || "");
-    setAlbumArt(track.album_art || "");
+    setArtist(track.artist || '');
+    setAlbumArt(track.album_art || '');
     setMusicFile(null);
     setIsUploadOpen(true);
   };
@@ -84,10 +98,10 @@ export const MusicPage: React.FC = () => {
 
     setIsUploading(true);
     try {
-      let audioUrl = editingTrack ? editingTrack.file_url : "";
+      let audioUrl = editingTrack ? editingTrack.file_url : '';
 
       if (musicFile) {
-        audioUrl = await uploadFileWithFallback(musicFile, "/api/upload/music");
+        audioUrl = await uploadFileWithFallback(musicFile, '/api/upload/music');
       }
 
       if (!audioUrl) {
@@ -96,45 +110,33 @@ export const MusicPage: React.FC = () => {
       }
 
       const payload = {
-        title: title || "Untitled Song",
-        artist: artist || "Unknown Artist",
+        title: title || 'Untitled Song',
+        artist: artist || 'Unknown Artist',
         file_url: audioUrl,
-        album_art:
-          albumArt ||
-          "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=300",
-        duration: "03:30",
+        album_art: albumArt || 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=300',
+        duration: '03:30',
         favorite: editingTrack ? editingTrack.favorite : 0,
       };
 
       if (editingTrack) {
         const updatedTrack = { ...editingTrack, ...payload };
-        const updated = playlist.map((tr) =>
-          tr.id === editingTrack.id ? updatedTrack : tr,
-        );
+        const updated = playlist.map((tr) => (tr.id === editingTrack.id ? updatedTrack : tr));
         setPlaylist(updated);
 
         const client = getSupabaseClient();
         if (isSupabaseConfigured() && client) {
           try {
-            const { error } = await client
-              .from("music")
-              .update(payload)
-              .eq("id", editingTrack.id);
-            if (error)
-              console.error(
-                "Supabase update music error:",
-                error.message,
-                error,
-              );
+            const { error } = await client.from('music').update(payload).eq('id', editingTrack.id);
+            if (error) console.error('Supabase update music error:', error.message, error);
           } catch (err) {
-            console.warn("Supabase update music exception:", err);
+            console.warn('Supabase update music exception:', err);
           }
         }
 
         try {
           await fetch(`/api/music/${editingTrack.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           });
         } catch {
@@ -148,33 +150,23 @@ export const MusicPage: React.FC = () => {
         const client = getSupabaseClient();
         if (isSupabaseConfigured() && client) {
           try {
-            const { data, error } = await client
-              .from("music")
-              .insert([payload])
-              .select();
+            const { data, error } = await client.from('music').insert([payload]).select();
             if (error) {
-              console.error(
-                "Supabase insert music error:",
-                error.message,
-                error,
-              );
+              console.error('Supabase insert music error:', error.message, error);
             } else if (data && data[0]) {
               const inserted = data[0] as unknown as MusicTrack;
-              const synced = [
-                ...playlist.filter((t) => t.id !== newTrack.id),
-                inserted,
-              ];
+              const synced = [...playlist.filter((t) => t.id !== newTrack.id), inserted];
               setPlaylist(synced);
             }
           } catch (err) {
-            console.warn("Supabase insert music exception:", err);
+            console.warn('Supabase insert music exception:', err);
           }
         }
 
         try {
-          await fetch("/api/music", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+          await fetch('/api/music', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           });
         } catch {
@@ -184,12 +176,12 @@ export const MusicPage: React.FC = () => {
 
       setIsUploadOpen(false);
       setEditingTrack(null);
-      setTitle("");
-      setArtist("");
-      setAlbumArt("");
+      setTitle('');
+      setArtist('');
+      setAlbumArt('');
       setMusicFile(null);
     } catch (err) {
-      console.error("Save music error:", err);
+      console.error('Save music error:', err);
     } finally {
       setIsUploading(false);
     }
@@ -199,26 +191,22 @@ export const MusicPage: React.FC = () => {
     const trackToToggle = playlist.find((t) => t.id === id);
     const newFav = trackToToggle ? (trackToToggle.favorite === 1 ? 0 : 1) : 1;
     const updated = playlist.map((tr) =>
-      tr.id === id ? { ...tr, favorite: newFav } : tr,
+      tr.id === id ? { ...tr, favorite: newFav } : tr
     );
     setPlaylist(updated);
 
     const client = getSupabaseClient();
     if (isSupabaseConfigured() && client) {
       try {
-        const { error } = await client
-          .from("music")
-          .update({ favorite: newFav })
-          .eq("id", id);
-        if (error)
-          console.error("Supabase favorite music error:", error.message, error);
+        const { error } = await client.from('music').update({ favorite: newFav }).eq('id', id);
+        if (error) console.error('Supabase favorite music error:', error.message, error);
       } catch (err) {
-        console.warn("Supabase favorite toggle music failed:", err);
+        console.warn('Supabase favorite toggle music failed:', err);
       }
     }
 
     try {
-      await fetch(`/api/music/${id}/favorite`, { method: "POST" });
+      await fetch(`/api/music/${id}/favorite`, { method: 'POST' });
     } catch {
       // ignore API error on static host
     }
@@ -231,16 +219,15 @@ export const MusicPage: React.FC = () => {
     const client = getSupabaseClient();
     if (isSupabaseConfigured() && client) {
       try {
-        const { error } = await client.from("music").delete().eq("id", id);
-        if (error)
-          console.error("Supabase delete music error:", error.message, error);
+        const { error } = await client.from('music').delete().eq('id', id);
+        if (error) console.error('Supabase delete music error:', error.message, error);
       } catch (err) {
-        console.warn("Supabase delete music failed:", err);
+        console.warn('Supabase delete music failed:', err);
       }
     }
 
     try {
-      await fetch(`/api/music/${id}`, { method: "DELETE" });
+      await fetch(`/api/music/${id}`, { method: 'DELETE' });
     } catch {
       // ignore API error on static host
     }
@@ -258,8 +245,7 @@ export const MusicPage: React.FC = () => {
           Romantic Music Player
         </h1>
         <p className="text-[#5C3A4D]/80 text-sm max-w-lg mx-auto">
-          Songs that remind us of our first glance, midnight drives, and warm
-          quiet evenings.
+          Songs that remind us of our first glance, midnight drives, and warm quiet evenings.
         </p>
       </div>
 
@@ -270,21 +256,18 @@ export const MusicPage: React.FC = () => {
             {/* Spinning Vinyl */}
             <div
               className={`w-full h-full rounded-full overflow-hidden border-4 border-white shadow-lg ${
-                isPlaying ? "animate-spin" : ""
+                isPlaying ? 'animate-spin' : ''
               }`}
-              style={{ animationDuration: "12s" }}
+              style={{ animationDuration: '12s' }}
             >
-              {currentTrack?.album_art ? (
-                <img
-                  src={currentTrack.album_art}
-                  alt={currentTrack.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-[#FFE4EC] flex items-center justify-center text-[#EC407A]">
-                  <Music size={48} />
-                </div>
-              )}
+              <img
+                src={currentTrack?.album_art || FALLBACK_ALBUM_ART}
+                alt={currentTrack?.title || 'Song'}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = FALLBACK_ALBUM_ART;
+                }}
+              />
             </div>
             {/* Vinyl Center Hole */}
             <div className="absolute w-8 h-8 rounded-full bg-white border-2 border-[#F8BBD0] shadow-inner" />
@@ -292,10 +275,10 @@ export const MusicPage: React.FC = () => {
 
           <div className="space-y-1">
             <h2 className="font-serif text-2xl font-bold text-[#5C3A4D]">
-              {currentTrack?.title || "Select a Song"}
+              {currentTrack?.title || 'Select a Song'}
             </h2>
             <p className="text-sm font-semibold text-[#EC407A]">
-              {currentTrack?.artist || "Our Playlist"}
+              {currentTrack?.artist || 'Our Playlist'}
             </p>
           </div>
 
@@ -311,11 +294,7 @@ export const MusicPage: React.FC = () => {
               onClick={togglePlay}
               className="p-4 bg-[#EC407A] hover:bg-[#D81B60] text-white rounded-full shadow-lg shadow-[#EC407A]/20 transform active:scale-95 transition"
             >
-              {isPlaying ? (
-                <Pause size={24} />
-              ) : (
-                <Play size={24} className="ml-1" />
-              )}
+              {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
             </button>
             <button
               onClick={nextTrack}
@@ -352,8 +331,8 @@ export const MusicPage: React.FC = () => {
                   key={track.id}
                   className={`flex items-center justify-between p-3 rounded-2xl border transition ${
                     isCurrent
-                      ? "bg-[#FFE4EC] border-[#F8BBD0] shadow-sm"
-                      : "bg-white/50 border-white/60 hover:bg-[#FFE4EC]/50"
+                      ? 'bg-[#FFE4EC] border-[#F8BBD0] shadow-sm'
+                      : 'bg-white/50 border-white/60 hover:bg-[#FFE4EC]/50'
                   }`}
                 >
                   <div
@@ -362,9 +341,12 @@ export const MusicPage: React.FC = () => {
                   >
                     <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#FFE4EC] shrink-0">
                       <img
-                        src={track.album_art}
+                        src={track.album_art || FALLBACK_ALBUM_ART}
                         alt={track.title}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = FALLBACK_ALBUM_ART;
+                        }}
                       />
                     </div>
                     <div className="min-w-0">
@@ -392,12 +374,7 @@ export const MusicPage: React.FC = () => {
                       onClick={() => toggleFavorite(track.id)}
                       className="p-1 text-[#EC407A] hover:scale-110 transition"
                     >
-                      <Heart
-                        size={14}
-                        className={
-                          track.favorite ? "fill-[#EC407A] text-[#EC407A]" : ""
-                        }
-                      />
+                      <Heart size={14} className={track.favorite ? 'fill-[#EC407A] text-[#EC407A]' : ''} />
                     </button>
                     <button
                       onClick={() => handleDelete(track.id)}
@@ -425,9 +402,7 @@ export const MusicPage: React.FC = () => {
             >
               <div className="flex items-center justify-between border-b border-pink-100 pb-3">
                 <h3 className="font-serif text-lg font-bold text-pink-950">
-                  {editingTrack
-                    ? "Edit Song Details"
-                    : "Upload Romantic Song (MP3/WAV)"}
+                  {editingTrack ? 'Edit Song Details' : 'Upload Romantic Song (MP3/WAV)'}
                 </h3>
                 <button
                   onClick={() => setIsUploadOpen(false)}
@@ -440,10 +415,7 @@ export const MusicPage: React.FC = () => {
               <form onSubmit={handleUpload} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-pink-900 mb-1">
-                    Select Audio File{" "}
-                    {editingTrack
-                      ? "(Optional - Keep existing file)"
-                      : "(MP3/WAV)"}
+                    Select Audio File {editingTrack ? '(Optional - Keep existing file)' : '(MP3/WAV)'}
                   </label>
                   <input
                     type="file"
@@ -487,9 +459,7 @@ export const MusicPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#FFE4EC] hover:bg-[#F8BBD0] text-[#EC407A] text-xs font-bold transition shrink-0">
                       <Plus size={14} />
-                      <span>
-                        {albumArt ? "Cover Uploaded ✓" : "Upload Cover"}
-                      </span>
+                      <span>{albumArt ? 'Cover Uploaded ✓' : 'Upload Cover'}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -497,12 +467,9 @@ export const MusicPage: React.FC = () => {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           const formData = new FormData();
-                          formData.append("file", file);
+                          formData.append('file', file);
                           try {
-                            const res = await fetch("/api/upload/photos", {
-                              method: "POST",
-                              body: formData,
-                            });
+                            const res = await fetch('/api/upload/photos', { method: 'POST', body: formData });
                             const data = await res.json();
                             if (data.url) setAlbumArt(data.url);
                           } catch (err) {
@@ -535,7 +502,7 @@ export const MusicPage: React.FC = () => {
                     disabled={isUploading}
                     className="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-pink-500 hover:bg-pink-600 shadow-md"
                   >
-                    {isUploading ? "Uploading..." : "Save Song"}
+                    {isUploading ? 'Uploading...' : 'Save Song'}
                   </button>
                 </div>
               </form>
