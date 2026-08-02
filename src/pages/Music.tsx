@@ -316,10 +316,11 @@ export const MusicPage: React.FC = () => {
             </div>
             <button
               onClick={openAddModal}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#EC407A] hover:bg-[#D81B60] text-white text-xs font-bold uppercase tracking-widest shadow-md transition"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full bg-[#EC407A] hover:bg-[#D81B60] text-white text-xs font-bold uppercase tracking-widest shadow-md transition shrink-0"
             >
               <Plus size={14} />
-              <span>Add Song</span>
+              <span className="hidden sm:inline">Add Song</span>
+              <span className="sm:hidden text-[11px]">Tambah</span>
             </button>
           </div>
 
@@ -398,7 +399,7 @@ export const MusicPage: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-pink-100 relative space-y-4"
+              className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-pink-100 relative space-y-4 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-pink-100 pb-3">
                 <h3 className="font-serif text-lg font-bold text-pink-950">
