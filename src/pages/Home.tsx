@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Link } from 'react-router-dom';
-import { Heart, Sparkles, Play, ArrowRight, Calendar, Music as MusicIcon, Clock, Mail } from 'lucide-react';
+import { Heart, Sparkles, ArrowRight, Music as MusicIcon, Calendar, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
-import { differenceInDays } from 'date-fns';
+import { format } from 'date-fns';
 
 export const Home: React.FC = () => {
   const { settings, isPlaying, togglePlay, currentTrack } = useApp();
@@ -13,6 +13,8 @@ export const Home: React.FC = () => {
     minutes: 0,
     seconds: 0,
   });
+
+  const currentDateString = format(new Date(), 'MMMM d, yyyy').toUpperCase();
 
   useEffect(() => {
     const calcRealtime = () => {
@@ -35,132 +37,139 @@ export const Home: React.FC = () => {
   }, [settings.anniversary_date]);
 
   const dashboardPhoto =
-    settings.couple_photo_url || 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600';
+    settings.couple_photo_url || 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800';
 
   return (
-    <div className="relative min-h-[calc(100vh-6rem)] flex flex-col justify-center items-center px-4 py-8 lg:py-12 overflow-hidden">
-      {/* Background Soft Ambient Decorations */}
-      <div className="absolute top-10 left-10 w-24 h-24 bg-[#FFE4EC] rounded-full blur-3xl opacity-60 pointer-events-none" />
+    <div className="relative min-h-[calc(100vh-6rem)] flex flex-col justify-start items-center px-4 py-4 sm:py-8 space-y-6 max-w-4xl mx-auto">
+      {/* Background Soft Ambient Glows */}
+      <div className="absolute top-10 left-10 w-32 h-32 bg-[#FFE4EC] rounded-full blur-3xl opacity-60 pointer-events-none" />
       <div className="absolute bottom-20 right-10 w-48 h-48 bg-[#F8BBD0] rounded-full blur-[80px] opacity-40 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/4 w-4 h-4 bg-[#FF69B4] rounded-full opacity-20 pointer-events-none" />
 
-      {/* Main Content Layout */}
-      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10">
-        
-        {/* Left Column: Hero & Countdown */}
-        <div className="lg:col-span-7 flex flex-col justify-center space-y-6 text-left">
-          <motion.div
-            initial={{ opacity: 0, y: -15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="space-y-1"
+      {/* Top Hero Container Card */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full bg-[#FFE4EC]/75 backdrop-blur-md rounded-[36px] p-6 sm:p-10 border border-white/90 shadow-lg text-center space-y-4 sm:space-y-6 relative"
+      >
+        {/* Date Eyebrow */}
+        <p className="text-[11px] sm:text-xs font-bold text-[#EC407A] tracking-widest uppercase">
+          TODAY IS {currentDateString}
+        </p>
+
+        {/* Main Headline */}
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold text-[#5C3A4D] leading-tight max-w-xl mx-auto">
+          You are the <span className="text-[#EC407A] italic font-serif">stars</span> in my little sky.
+        </h1>
+
+        {/* Subtitle */}
+        <p className="text-xs sm:text-base text-[#5C3A4D]/80 max-w-md mx-auto leading-relaxed">
+          {settings.quote ||
+            'A sweet corner of the cosmos made entirely of our love, quiet laughs, and endless memories.'}
+        </p>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Link
+            to="/notes"
+            className="w-full sm:w-auto px-7 py-3.5 bg-[#EC407A] hover:bg-[#D81B60] text-white rounded-full font-bold shadow-md shadow-[#EC407A]/25 uppercase tracking-wider text-xs transition transform active:scale-95 flex items-center justify-center gap-2"
           >
-            <h2 className="text-[#FF69B4] text-xl font-serif italic tracking-wide">
-              Our Little Universe
-            </h2>
-            <h1 className="text-5xl sm:text-7xl font-bold tracking-tighter leading-tight text-[#5C3A4D]">
-              {settings.partner1_name}{' '}
-              <span className="text-[#F8BBD0] font-light">&amp;</span>{' '}
-              {settings.partner2_name}
-            </h1>
-          </motion.div>
+            <Sparkles size={15} />
+            <span>WRITE A NOTE</span>
+          </Link>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.9 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-base sm:text-lg text-[#5C3A4D]/80 max-w-lg leading-relaxed italic font-serif"
+          <Link
+            to="/story"
+            className="w-full sm:w-auto px-7 py-3.5 bg-white hover:bg-pink-50 text-[#5C3A4D] rounded-full font-bold border border-pink-200/80 shadow-xs uppercase tracking-wider text-xs transition transform active:scale-95 flex items-center justify-center gap-2"
           >
-            "{settings.quote}"
-          </motion.p>
-
-          {/* Anniversary Countdown & Stats Widget */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-lg"
-          >
-            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-3xl border border-white/80 shadow-sm text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-[#EC407A]">{time.days}</div>
-              <div className="text-[10px] uppercase tracking-tighter font-bold text-[#5C3A4D]/60">Days</div>
-            </div>
-            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-3xl border border-white/80 shadow-sm text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-[#EC407A]">{time.hours}</div>
-              <div className="text-[10px] uppercase tracking-tighter font-bold text-[#5C3A4D]/60">Hours</div>
-            </div>
-            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-3xl border border-white/80 shadow-sm text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-[#EC407A]">{time.minutes}</div>
-              <div className="text-[10px] uppercase tracking-tighter font-bold text-[#5C3A4D]/60">Mins</div>
-            </div>
-            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-3xl border border-white/80 shadow-sm text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-[#EC407A]">{time.seconds}</div>
-              <div className="text-[10px] uppercase tracking-tighter font-bold text-[#5C3A4D]/60">Secs</div>
-            </div>
-          </motion.div>
-
-          {/* Hero Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-            className="flex flex-wrap items-center gap-4 pt-2"
-          >
-            <Link
-              to="/story"
-              className="px-8 py-4 bg-[#EC407A] text-white rounded-full font-bold shadow-lg shadow-[#EC407A]/20 uppercase tracking-widest text-xs hover:bg-[#D81B60] transition transform active:scale-95 flex items-center gap-2"
-            >
-              <span>Open Universe</span>
-              <ArrowRight size={14} />
-            </Link>
-
-            <button
-              onClick={togglePlay}
-              className="px-8 py-4 bg-white text-[#EC407A] rounded-full font-bold border border-[#F8BBD0] uppercase tracking-widest text-xs hover:shadow-md transition transform active:scale-95 flex items-center gap-2"
-            >
-              <MusicIcon size={14} />
-              <span>{isPlaying ? 'Pause Music' : 'Play Music'}</span>
-            </button>
-          </motion.div>
+            <span>EXPLORE TIMELINE</span>
+            <ArrowRight size={15} />
+          </Link>
         </div>
+      </motion.div>
 
-        {/* Right Column: Visual Elements & Glass Photo Frame */}
-        <div className="lg:col-span-5 flex flex-col justify-center items-center lg:items-end relative pt-6 lg:pt-0">
-          {/* Floating Heart Graphic */}
-          <div className="absolute -top-6 -right-6 w-28 h-28 text-[#F8BBD0]/40 pointer-events-none hidden sm:block">
-            <Heart size={100} className="fill-current" />
+      {/* Polaroid Photo Frame with Overlapping Avatar Badges */}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.7, delay: 0.2 }}
+        className="w-full max-w-md bg-white p-4 sm:p-5 rounded-[32px] shadow-2xl border border-pink-100 relative group"
+      >
+        <div className="w-full h-80 sm:h-96 rounded-[24px] overflow-hidden relative bg-[#FFE4EC]/50 shadow-inner">
+          <img
+            src={dashboardPhoto}
+            alt="Couple Memory"
+            className="w-full h-full object-cover transform group-hover:scale-105 transition duration-700"
+          />
+
+          {/* Overlapping Avatar Badges Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="flex items-center -space-x-4 bg-white/40 backdrop-blur-md p-2 rounded-full border border-white/80 shadow-xl pointer-events-auto">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-white overflow-hidden shadow-md shrink-0 bg-[#FFE4EC]">
+                <img
+                  src={dashboardPhoto}
+                  alt={settings.partner1_name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-white overflow-hidden shadow-md shrink-0 bg-[#F8BBD0]">
+                <img
+                  src={dashboardPhoto}
+                  alt={settings.partner2_name}
+                  className="w-full h-full object-cover scale-125 origin-right"
+                />
+              </div>
+            </div>
           </div>
-
-          {/* Couple Photo Frame (Glassmorphism) */}
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="w-72 sm:w-80 h-96 bg-white/30 backdrop-blur-md rounded-[40px] border border-white/80 p-4 shadow-2xl relative group"
-          >
-            <div className="w-full h-full bg-gradient-to-tr from-[#FFE4EC] to-[#FFF0F6] rounded-[30px] overflow-hidden relative shadow-inner">
-              <img
-                src={dashboardPhoto}
-                alt="Couple"
-                className="w-full h-full object-cover transform group-hover:scale-105 transition duration-700"
-              />
-            </div>
-
-            {/* Polaroid Label Overlay */}
-            <motion.div
-              animate={{ rotate: [-5, -2, -5] }}
-              transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
-              className="absolute -bottom-5 -left-5 bg-white p-4 rounded-2xl shadow-xl border border-[#FFE4EC]"
-            >
-              <p className="text-[#EC407A] font-bold text-xs sm:text-sm tracking-tighter uppercase">
-                {settings.anniversary_date ? settings.anniversary_date : 'OUR SPECIAL DAY'}
-              </p>
-              <p className="text-[10px] text-[#5C3A4D]/60 font-medium">Forever &amp; Always</p>
-            </motion.div>
-          </motion.div>
         </div>
 
-      </div>
+        {/* Bottom Label inside Polaroid */}
+        <div className="pt-3 pb-1 text-center">
+          <p className="font-serif font-bold text-lg text-[#5C3A4D]">
+            {settings.partner1_name} &amp; {settings.partner2_name}
+          </p>
+          <p className="text-xs text-[#EC407A] font-medium tracking-wide">
+            {settings.anniversary_date ? `Together since ${settings.anniversary_date}` : 'Forever & Always'}
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Live Relationship Counter Widget */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="w-full max-w-md bg-white/70 backdrop-blur-md p-5 rounded-3xl border border-white shadow-sm space-y-3"
+      >
+        <div className="flex items-center justify-between border-b border-pink-100 pb-2">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#EC407A]">
+            <Clock size={16} />
+            <span>OUR TIME TOGETHER</span>
+          </div>
+          <span className="text-[11px] font-bold text-[#5C3A4D]/60">
+            {time.days} Days Total
+          </span>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2 text-center">
+          <div className="bg-[#FFE4EC]/60 p-2.5 rounded-2xl border border-pink-200/50">
+            <div className="text-xl sm:text-2xl font-bold text-[#EC407A]">{time.days}</div>
+            <div className="text-[9px] uppercase font-bold text-[#5C3A4D]/60">Days</div>
+          </div>
+          <div className="bg-[#FFE4EC]/60 p-2.5 rounded-2xl border border-pink-200/50">
+            <div className="text-xl sm:text-2xl font-bold text-[#EC407A]">{time.hours}</div>
+            <div className="text-[9px] uppercase font-bold text-[#5C3A4D]/60">Hours</div>
+          </div>
+          <div className="bg-[#FFE4EC]/60 p-2.5 rounded-2xl border border-pink-200/50">
+            <div className="text-xl sm:text-2xl font-bold text-[#EC407A]">{time.minutes}</div>
+            <div className="text-[9px] uppercase font-bold text-[#5C3A4D]/60">Mins</div>
+          </div>
+          <div className="bg-[#FFE4EC]/60 p-2.5 rounded-2xl border border-pink-200/50">
+            <div className="text-xl sm:text-2xl font-bold text-[#EC407A]">{time.seconds}</div>
+            <div className="text-[9px] uppercase font-bold text-[#5C3A4D]/60">Secs</div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };
