@@ -5,6 +5,7 @@ import { ParticleCanvas } from './components/ParticleCanvas';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { GlobalMusicPlayer } from './components/GlobalMusicPlayer';
+import { BottomNav } from './components/BottomNav';
 
 import { Home } from './pages/Home';
 import { Story } from './pages/Story';
@@ -34,7 +35,7 @@ export default function App() {
           <Navbar />
 
           {/* Main Content View */}
-          <main className="relative z-10 flex-1">
+          <main className="relative z-10 flex-1 pb-6 sm:pb-12">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/story" element={<Story />} />
@@ -50,6 +51,9 @@ export default function App() {
 
           {/* Floating Music Player Widget */}
           <GlobalMusicPlayer />
+
+          {/* Mobile Bottom Navigation */}
+          <BottomNav />
 
           {/* Footer */}
           <Footer />
