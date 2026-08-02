@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { uploadFileWithFallback } from '../lib/storage';
-import { isSupabaseConfigured, SUPABASE_SQL_SCHEMA } from '../lib/supabase';
-import { Settings, Heart, Sparkles, Key, Check, Palette, Upload, Image as ImageIcon, Database, Copy, CheckCircle2 } from 'lucide-react';
+import { Settings, Heart, Sparkles, Key, Check, Palette, Upload, Image as ImageIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export const SettingsPage: React.FC = () => {
@@ -231,69 +230,6 @@ export const SettingsPage: React.FC = () => {
               </button>
             </div>
           </form>
-      </div>
-
-      {/* Supabase Full-Stack Vercel Setup Section */}
-      <div className="max-w-2xl mx-auto bg-white/60 backdrop-blur-md border border-white/80 p-6 sm:p-8 rounded-3xl shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-[#FFE4EC] pb-3">
-          <div className="flex items-center gap-2">
-            <Database size={20} className="text-[#EC407A]" />
-            <h2 className="font-serif text-lg font-bold text-[#5C3A4D]">
-              Supabase Full-Stack Database (Vercel)
-            </h2>
-          </div>
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${
-              isSupabaseConfigured()
-                ? 'bg-emerald-100 text-emerald-700'
-                : 'bg-amber-100 text-amber-700'
-            }`}
-          >
-            {isSupabaseConfigured() ? (
-              <>
-                <CheckCircle2 size={13} /> Connected to Supabase
-              </>
-            ) : (
-              'Using Local Storage Fallback'
-            )}
-          </span>
-        </div>
-
-        <p className="text-xs text-[#5C3A4D]/80 leading-relaxed">
-          Aplikasi ini telah siap untuk dikoneksikan ke <strong>Supabase</strong> agar seluruh data (Gallery, Music, Stories, Letters, Notes, Calendar, Settings) dan file upload tersimpan permanen saat dihosting di <strong>Vercel</strong>.
-        </p>
-
-        <div className="bg-[#5C3A4D]/5 p-4 rounded-2xl space-y-3 border border-[#FFE4EC]">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#5C3A4D]">SQL Schema Editor Script</span>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(SUPABASE_SQL_SCHEMA);
-                alert('Supabase SQL Schema berhasil disalin!');
-              }}
-              className="px-3 py-1 bg-white text-[#EC407A] border border-[#EC407A]/30 rounded-xl text-xs font-bold flex items-center gap-1 hover:bg-[#FFE4EC] transition"
-            >
-              <Copy size={12} /> Copy SQL Script
-            </button>
-          </div>
-          <pre className="text-[10px] bg-slate-900 text-slate-200 p-3 rounded-xl overflow-x-auto max-h-40 font-mono">
-            {SUPABASE_SQL_SCHEMA.trim()}
-          </pre>
-          <div className="text-[11px] text-[#5C3A4D]/70 space-y-1">
-            <p><strong>Langkah Setup Supabase di Vercel:</strong></p>
-            <ol className="list-decimal list-inside space-y-0.5">
-              <li>Buat proyek baru di <a href="https://supabase.com" target="_blank" rel="noreferrer" className="underline font-medium text-[#EC407A]">Supabase.com</a>.</li>
-              <li>Buka <strong>SQL Editor</strong> di dashboard Supabase, tempel skrip di atas, lalu jalankan (Run).</li>
-              <li>Buka <strong>Settings &gt; API</strong> di Supabase, lalu salin <strong>URL</strong> dan <strong>anon public key</strong>.</li>
-              <li>Di Vercel (Project Settings &gt; Environment Variables), tambahkan:
-                <ul className="list-disc list-inside ml-3 font-mono text-[10px] text-[#EC407A]">
-                  <li>VITE_SUPABASE_URL=...</li>
-                  <li>VITE_SUPABASE_ANON_KEY=...</li>
-                </ul>
-              </li>
-            </ol>
-          </div>
-        </div>
       </div>
     </div>
   );
