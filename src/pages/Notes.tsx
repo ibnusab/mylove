@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { useApp } from "../context/AppContext";
-import { LoveNote } from "../types";
-import { fetchWithFallback, getLocalData, setLocalData } from "../lib/storage";
-import { isSupabaseConfigured, getSupabaseClient } from "../lib/supabase";
+import React, { useEffect, useState } from 'react';
+import { useApp } from '../context/AppContext';
+import { LoveNote } from '../types';
+import { fetchWithFallback, getLocalData, setLocalData } from '../lib/storage';
+import { isSupabaseConfigured, getSupabaseClient } from '../lib/supabase';
 import {
   MessageSquareHeart,
   Pin,
@@ -13,26 +13,26 @@ import {
   Smile,
   Edit2,
   X,
-} from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
-const STORAGE_KEY_NOTES = "sabrianisa_notes";
+const STORAGE_KEY_NOTES = 'sabrianisa_notes';
 
 const defaultNotes: LoveNote[] = [];
 
 export const Notes: React.FC = () => {
   const { settings } = useApp();
   const [notes, setNotes] = useState<LoveNote[]>(() =>
-    getLocalData(STORAGE_KEY_NOTES, []),
+    getLocalData(STORAGE_KEY_NOTES, [])
   );
   const [editingNote, setEditingNote] = useState<LoveNote | null>(null);
-  const [sender, setSender] = useState(settings.partner1_name || "Sabri");
-  const [receiver, setReceiver] = useState(settings.partner2_name || "Anisa");
-  const [message, setMessage] = useState("");
-  const [emoji, setEmoji] = useState("❤️");
+  const [sender, setSender] = useState(settings.partner1_name || 'Sabri');
+  const [receiver, setReceiver] = useState(settings.partner2_name || 'Anisa');
+  const [message, setMessage] = useState('');
+  const [emoji, setEmoji] = useState('❤️');
 
   const fetchNotes = () => {
-    fetchWithFallback<LoveNote[]>("/api/notes", STORAGE_KEY_NOTES, [], "notes")
+    fetchWithFallback<LoveNote[]>('/api/notes', STORAGE_KEY_NOTES, [], 'notes')
       .then((data) => setNotes(data))
       .catch((err) => console.error(err));
   };
@@ -51,12 +51,12 @@ export const Notes: React.FC = () => {
     setSender(n.sender);
     setReceiver(n.receiver);
     setMessage(n.message);
-    setEmoji(n.emoji || "❤️");
+    setEmoji(n.emoji || '❤️');
   };
 
   const cancelEdit = () => {
     setEditingNote(null);
-    setMessage("");
+    setMessage('');
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -71,35 +71,29 @@ export const Notes: React.FC = () => {
         message,
         emoji,
       };
-      const updatedList = notes.map((n) =>
-        n.id === editingNote.id ? updatedNote : n,
-      );
+      const updatedList = notes.map((n) => (n.id === editingNote.id ? updatedNote : n));
       saveNotes(updatedList);
 
       const client = getSupabaseClient();
       if (isSupabaseConfigured() && client) {
         try {
-          const { error } = await client
-            .from("notes")
-            .update({
-              sender,
-              receiver,
-              message,
-              emoji,
-              is_pinned: editingNote.is_pinned,
-            })
-            .eq("id", editingNote.id);
-          if (error)
-            console.error("Supabase update note error:", error.message, error);
+          const { error } = await client.from('notes').update({
+            sender,
+            receiver,
+            message,
+            emoji,
+            is_pinned: editingNote.is_pinned,
+          }).eq('id', editingNote.id);
+          if (error) console.error('Supabase update note error:', error.message, error);
         } catch (err) {
-          console.warn("Supabase update note exception:", err);
+          console.warn('Supabase update note exception:', err);
         }
       }
 
       try {
         await fetch(`/api/notes/${editingNote.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sender,
             receiver,
@@ -127,38 +121,30 @@ export const Notes: React.FC = () => {
       const client = getSupabaseClient();
       if (isSupabaseConfigured() && client) {
         try {
-          const { data, error } = await client
-            .from("notes")
-            .insert([
-              {
-                sender,
-                receiver,
-                message,
-                emoji,
-                is_pinned: 0,
-              },
-            ])
-            .select();
+          const { data, error } = await client.from('notes').insert([{
+            sender,
+            receiver,
+            message,
+            emoji,
+            is_pinned: 0,
+          }]).select();
 
           if (error) {
-            console.error("Supabase insert note error:", error.message, error);
+            console.error('Supabase insert note error:', error.message, error);
           } else if (data && data[0]) {
             const inserted = data[0] as unknown as LoveNote;
-            const synced = [
-              inserted,
-              ...notes.filter((n) => n.id !== newNote.id),
-            ];
+            const synced = [inserted, ...notes.filter((n) => n.id !== newNote.id)];
             saveNotes(synced);
           }
         } catch (err) {
-          console.warn("Supabase insert note exception:", err);
+          console.warn('Supabase insert note exception:', err);
         }
       }
 
       try {
-        await fetch("/api/notes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        await fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sender,
             receiver,
@@ -173,37 +159,29 @@ export const Notes: React.FC = () => {
     }
 
     setEditingNote(null);
-    setMessage("");
+    setMessage('');
   };
 
   const togglePin = async (id: number) => {
     const noteToPin = notes.find((n) => n.id === id);
     const newPin = noteToPin ? (noteToPin.is_pinned === 1 ? 0 : 1) : 1;
     const updatedList = notes.map((n) =>
-      n.id === id ? { ...n, is_pinned: newPin } : n,
+      n.id === id ? { ...n, is_pinned: newPin } : n
     );
     saveNotes(updatedList);
 
     const client = getSupabaseClient();
     if (isSupabaseConfigured() && client) {
       try {
-        const { error } = await client
-          .from("notes")
-          .update({ is_pinned: newPin })
-          .eq("id", id);
-        if (error)
-          console.error(
-            "Supabase toggle pin note error:",
-            error.message,
-            error,
-          );
+        const { error } = await client.from('notes').update({ is_pinned: newPin }).eq('id', id);
+        if (error) console.error('Supabase toggle pin note error:', error.message, error);
       } catch (err) {
-        console.warn("Supabase toggle pin note exception:", err);
+        console.warn('Supabase toggle pin note exception:', err);
       }
     }
 
     try {
-      await fetch(`/api/notes/${id}/pin`, { method: "POST" });
+      await fetch(`/api/notes/${id}/pin`, { method: 'POST' });
     } catch {
       // ignore
     }
@@ -215,20 +193,20 @@ export const Notes: React.FC = () => {
 
     if (isSupabaseConfigured() && supabase) {
       try {
-        await supabase.from("notes").delete().eq("id", id);
+        await supabase.from('notes').delete().eq('id', id);
       } catch (err) {
-        console.warn("Supabase delete note error:", err);
+        console.warn('Supabase delete note error:', err);
       }
     }
 
     try {
-      await fetch(`/api/notes/${id}`, { method: "DELETE" });
+      await fetch(`/api/notes/${id}`, { method: 'DELETE' });
     } catch {
       // ignore
     }
   };
 
-  const emojis = ["❤️", "💖", "🥰", "🌹", "🍓", "☕", "✨", "🌸", "💌"];
+  const emojis = ['❤️', '💖', '🥰', '🌹', '🍓', '☕', '✨', '🌸', '💌'];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
@@ -242,8 +220,7 @@ export const Notes: React.FC = () => {
           Private Love Notes
         </h1>
         <p className="text-[#5C3A4D]/80 text-sm max-w-lg mx-auto">
-          Leave little sweet notes, gentle reminders, and cute heart messages
-          for each other.
+          Leave little sweet notes, gentle reminders, and cute heart messages for each other.
         </p>
       </div>
 
@@ -258,12 +235,8 @@ export const Notes: React.FC = () => {
                 onChange={(e) => setSender(e.target.value)}
                 className="bg-[#FFE4EC] border border-[#F8BBD0] rounded-lg px-2.5 py-1 text-[#5C3A4D] focus:outline-none"
               >
-                <option value={settings.partner1_name}>
-                  {settings.partner1_name}
-                </option>
-                <option value={settings.partner2_name}>
-                  {settings.partner2_name}
-                </option>
+                <option value={settings.partner1_name}>{settings.partner1_name}</option>
+                <option value={settings.partner2_name}>{settings.partner2_name}</option>
               </select>
             </div>
 
@@ -274,26 +247,20 @@ export const Notes: React.FC = () => {
                 onChange={(e) => setReceiver(e.target.value)}
                 className="bg-[#FFE4EC] border border-[#F8BBD0] rounded-lg px-2.5 py-1 text-[#5C3A4D] focus:outline-none"
               >
-                <option value={settings.partner2_name}>
-                  {settings.partner2_name}
-                </option>
-                <option value={settings.partner1_name}>
-                  {settings.partner1_name}
-                </option>
+                <option value={settings.partner2_name}>{settings.partner2_name}</option>
+                <option value={settings.partner1_name}>{settings.partner1_name}</option>
               </select>
             </div>
 
             {/* Emoji Selector */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-w-full py-0.5">
               {emojis.map((em) => (
                 <button
                   type="button"
                   key={em}
                   onClick={() => setEmoji(em)}
-                  className={`p-1 rounded-lg text-sm transition ${
-                    emoji === em
-                      ? "bg-[#FFE4EC] scale-125"
-                      : "hover:bg-[#FFE4EC]/50"
+                  className={`p-1 rounded-lg text-sm shrink-0 transition ${
+                    emoji === em ? 'bg-[#FFE4EC] scale-125' : 'hover:bg-[#FFE4EC]/50'
                   }`}
                 >
                   {em}
@@ -321,15 +288,13 @@ export const Notes: React.FC = () => {
                   <X size={14} />
                   <span>Cancel Edit</span>
                 </button>
-              ) : (
-                <div />
-              )}
+              ) : <div />}
               <button
                 type="submit"
                 className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#EC407A] hover:bg-[#D81B60] text-white text-xs font-bold uppercase tracking-widest shadow-md transition transform active:scale-95"
               >
                 <Send size={14} />
-                <span>{editingNote ? "Update Note" : "Send Note"}</span>
+                <span>{editingNote ? 'Update Note' : 'Send Note'}</span>
               </button>
             </div>
           </div>
@@ -345,8 +310,8 @@ export const Notes: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             className={`p-5 rounded-3xl border transition relative shadow-sm hover:shadow-md ${
               note.is_pinned
-                ? "bg-gradient-to-tr from-[#FFE4EC] to-[#F8BBD0]/40 border-[#EC407A]/40 ring-2 ring-[#EC407A]/30"
-                : "bg-white/60 backdrop-blur-md border-white/80"
+                ? 'bg-gradient-to-tr from-[#FFE4EC] to-[#F8BBD0]/40 border-[#EC407A]/40 ring-2 ring-[#EC407A]/30'
+                : 'bg-white/60 backdrop-blur-md border-white/80'
             }`}
           >
             {note.is_pinned === 1 && (
@@ -367,9 +332,7 @@ export const Notes: React.FC = () => {
             </p>
 
             <div className="flex items-center justify-between text-[11px] text-[#5C3A4D]/60 border-t border-[#F8BBD0]/30 pt-2">
-              <span>
-                {note.created_at ? note.created_at.slice(0, 10) : "Just now"}
-              </span>
+              <span>{note.created_at ? note.created_at.slice(0, 10) : 'Just now'}</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => openEdit(note)}
@@ -383,12 +346,7 @@ export const Notes: React.FC = () => {
                   className="p-1 hover:text-[#EC407A] transition"
                   title="Pin Note"
                 >
-                  <Pin
-                    size={14}
-                    className={
-                      note.is_pinned ? "fill-[#EC407A] text-[#EC407A]" : ""
-                    }
-                  />
+                  <Pin size={14} className={note.is_pinned ? 'fill-[#EC407A] text-[#EC407A]' : ''} />
                 </button>
                 <button
                   onClick={() => handleDelete(note.id)}
