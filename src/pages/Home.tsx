@@ -101,26 +101,6 @@ export const Home: React.FC = () => {
             alt="Couple Memory"
             className="w-full h-full object-cover transform group-hover:scale-105 transition duration-700"
           />
-
-          {/* Overlapping Avatar Badges Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="flex items-center -space-x-4 bg-white/40 backdrop-blur-md p-2 rounded-full border border-white/80 shadow-xl pointer-events-auto">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-white overflow-hidden shadow-md shrink-0 bg-[#FFE4EC]">
-                <img
-                  src={dashboardPhoto}
-                  alt={settings.partner1_name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-white overflow-hidden shadow-md shrink-0 bg-[#F8BBD0]">
-                <img
-                  src={dashboardPhoto}
-                  alt={settings.partner2_name}
-                  className="w-full h-full object-cover scale-125 origin-right"
-                />
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Bottom Label inside Polaroid */}
