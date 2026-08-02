@@ -454,26 +454,33 @@ export const MusicPage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-semibold text-pink-900 mb-1">
-                    Album Art (Upload or URL)
+                    Album Art / Foto Cover (Upload or URL)
                   </label>
                   <div className="flex items-center gap-2">
+                    {albumArt && (
+                      <img
+                        src={albumArt}
+                        alt="Preview"
+                        className="w-10 h-10 rounded-xl object-cover border border-pink-300 shrink-0 shadow-xs"
+                        onError={(e) => {
+                          e.currentTarget.src = FALLBACK_ALBUM_ART;
+                        }}
+                      />
+                    )}
                     <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#FFE4EC] hover:bg-[#F8BBD0] text-[#EC407A] text-xs font-bold transition shrink-0">
-                      <Plus size={14} />
-                      <span>{albumArt ? 'Cover Uploaded ✓' : 'Upload Cover'}</span>
+                      <Upload size={14} />
+                      <span>{albumArt ? 'Ganti Cover' : 'Unggah Cover'}</span>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
-                          const formData = new FormData();
-                          formData.append('file', file);
                           try {
-                            const res = await fetch('/api/upload/photos', { method: 'POST', body: formData });
-                            const data = await res.json();
-                            if (data.url) setAlbumArt(data.url);
+                            const url = await uploadFileWithFallback(file, '/api/upload/photos');
+                            if (url) setAlbumArt(url);
                           } catch (err) {
-                            console.error(err);
+                            console.error('Failed to upload cover image:', err);
                           }
                         }}
                         className="hidden"
@@ -483,7 +490,7 @@ export const MusicPage: React.FC = () => {
                       type="text"
                       value={albumArt}
                       onChange={(e) => setAlbumArt(e.target.value)}
-                      placeholder="https://images.unsplash.com/..."
+                      placeholder="Atau masukkan URL gambar..."
                       className="flex-1 px-3.5 py-2 rounded-xl border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
                     />
                   </div>
