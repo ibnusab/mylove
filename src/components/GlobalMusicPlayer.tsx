@@ -3,6 +3,8 @@ import { useApp } from '../context/AppContext';
 import { Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
+const FALLBACK_ALBUM_ART = 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=300';
+
 export const GlobalMusicPlayer: React.FC = () => {
   const { currentTrack, isPlaying, togglePlay, nextTrack, prevTrack } = useApp();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -73,17 +75,14 @@ export const GlobalMusicPlayer: React.FC = () => {
       >
         <div className="flex items-center gap-3">
           <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-[#FFE4EC] border border-white">
-            {currentTrack.album_art ? (
-              <img
-                src={currentTrack.album_art}
-                alt={currentTrack.title}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-[#EC407A]">
-                <Music size={18} />
-              </div>
-            )}
+            <img
+              src={currentTrack.album_art || FALLBACK_ALBUM_ART}
+              alt={currentTrack.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = FALLBACK_ALBUM_ART;
+              }}
+            />
             {isPlaying && (
               <span className="absolute inset-0 bg-[#FF69B4]/20 animate-pulse" />
             )}
