@@ -1,0 +1,6 @@
+{
+  "name": "SABRIANISA — Our Little Universe",
+  "description": "A private digital love diary for couples with timeline, gallery, music player, love notes, anniversary countdown, memory calendar, secret love letter, and settings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

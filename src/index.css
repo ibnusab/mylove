@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .clip-path-triangle {
+    clip-path: polygon(0 0, 50% 100%, 100% 0);
+  }
+}
+
+/* Hide scrollbars for clean carousel scrollable bars */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Vibrant Palette Custom Theme Enhancements */
+:root {
+  --bg-canvas: #FFF0F6;
+  --text-primary: #5C3A4D;
+  --text-muted: #7A5264;
+  --accent-pink: #EC407A;
+  --accent-bright: #FF69B4;
+  --accent-light: #F8BBD0;
+  --accent-soft: #FFE4EC;
+}
+
+body {
+  background-color: #FFF0F6;
+  color: #5C3A4D;
+}
