@@ -1,12 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { CalendarMemory, GalleryItem, TimelineEvent } from "../types";
-import {
-  fetchWithFallback,
-  getLocalData,
-  setLocalData,
-  uploadFileWithFallback,
-} from "../lib/storage";
-import { isSupabaseConfigured, getSupabaseClient } from "../lib/supabase";
+import React, { useEffect, useState } from 'react';
+import { CalendarMemory, GalleryItem, TimelineEvent } from '../types';
+import { fetchWithFallback, getLocalData, setLocalData, uploadFileWithFallback } from '../lib/storage';
+import { isSupabaseConfigured, getSupabaseClient } from '../lib/supabase';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -20,8 +15,8 @@ import {
   Film,
   Image as ImageIcon,
   BookOpen,
-} from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   format,
   addMonths,
@@ -33,17 +28,17 @@ import {
   isSameMonth,
   isSameDay,
   eachDayOfInterval,
-} from "date-fns";
+} from 'date-fns';
 
-const STORAGE_KEY_CALENDAR = "sabrianisa_calendar";
-const STORAGE_KEY_GALLERY = "sabrianisa_gallery";
-const STORAGE_KEY_STORIES = "sabrianisa_stories";
+const STORAGE_KEY_CALENDAR = 'sabrianisa_calendar';
+const STORAGE_KEY_GALLERY = 'sabrianisa_gallery';
+const STORAGE_KEY_STORIES = 'sabrianisa_stories';
 
 const normalizeDateStr = (rawStr?: string) => {
-  if (!rawStr) return "";
+  if (!rawStr) return '';
   const trimmed = rawStr.trim();
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) {
-    const [dd, mm, yyyy] = trimmed.split("/");
+    const [dd, mm, yyyy] = trimmed.split('/');
     return `${yyyy}-${mm}-${dd}`;
   }
   return trimmed.slice(0, 10);
@@ -57,52 +52,35 @@ const isSameDateStr = (d1?: string, d2?: string) => {
 export const MemoryCalendar: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [memories, setMemories] = useState<CalendarMemory[]>(() =>
-    getLocalData(STORAGE_KEY_CALENDAR, []),
+    getLocalData(STORAGE_KEY_CALENDAR, [])
   );
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() =>
-    getLocalData(STORAGE_KEY_GALLERY, []),
+    getLocalData(STORAGE_KEY_GALLERY, [])
   );
   const [storyEvents, setStoryEvents] = useState<TimelineEvent[]>(() =>
-    getLocalData(STORAGE_KEY_STORIES, []),
+    getLocalData(STORAGE_KEY_STORIES, [])
   );
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingMemory, setEditingMemory] = useState<CalendarMemory | null>(
-    null,
-  );
+  const [editingMemory, setEditingMemory] = useState<CalendarMemory | null>(null);
 
   // Form states
-  const [title, setTitle] = useState("");
-  const [note, setNote] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
-  const [eventType, setEventType] = useState("memory");
+  const [title, setTitle] = useState('');
+  const [note, setNote] = useState('');
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [eventType, setEventType] = useState('memory');
 
   const fetchAllData = () => {
-    fetchWithFallback<CalendarMemory[]>(
-      "/api/calendar",
-      STORAGE_KEY_CALENDAR,
-      [],
-      "calendar",
-    )
+    fetchWithFallback<CalendarMemory[]>('/api/calendar', STORAGE_KEY_CALENDAR, [], 'calendar')
       .then((data) => setMemories(data))
       .catch((err) => console.error(err));
 
-    fetchWithFallback<GalleryItem[]>(
-      "/api/gallery",
-      STORAGE_KEY_GALLERY,
-      [],
-      "gallery",
-    )
+    fetchWithFallback<GalleryItem[]>('/api/gallery', STORAGE_KEY_GALLERY, [], 'gallery')
       .then((data) => setGalleryItems(data))
       .catch((err) => console.error(err));
 
-    fetchWithFallback<TimelineEvent[]>(
-      "/api/story",
-      STORAGE_KEY_STORIES,
-      [],
-      "story",
-    )
+    fetchWithFallback<TimelineEvent[]>('/api/story', STORAGE_KEY_STORIES, [], 'story')
       .then((data) => setStoryEvents(data))
       .catch((err) => console.error(err));
   };
@@ -118,25 +96,25 @@ export const MemoryCalendar: React.FC = () => {
 
   const openAddModal = () => {
     setEditingMemory(null);
-    setTitle("");
-    setNote("");
-    setMediaUrl("");
-    setEventType("memory");
+    setTitle('');
+    setNote('');
+    setMediaUrl('');
+    setEventType('memory');
     setIsAddModalOpen(true);
   };
 
   const openEditModal = (mem: CalendarMemory) => {
     setEditingMemory(mem);
     setTitle(mem.title);
-    setNote(mem.note || "");
-    setMediaUrl(mem.media_url || "");
-    setEventType(mem.event_type || "memory");
+    setNote(mem.note || '');
+    setMediaUrl(mem.media_url || '');
+    setEventType(mem.event_type || 'memory');
     setIsAddModalOpen(true);
   };
 
   const handleSaveMemory = async (e: React.FormEvent) => {
     e.preventDefault();
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
     const payload = {
       date: dateStr,
@@ -147,33 +125,23 @@ export const MemoryCalendar: React.FC = () => {
     };
 
     if (editingMemory) {
-      const updatedList = memories.map((m) =>
-        m.id === editingMemory.id ? { ...m, ...payload } : m,
-      );
+      const updatedList = memories.map((m) => (m.id === editingMemory.id ? { ...m, ...payload } : m));
       saveMemories(updatedList);
 
       const client = getSupabaseClient();
       if (isSupabaseConfigured() && client) {
         try {
-          const { error } = await client
-            .from("calendar")
-            .update(payload)
-            .eq("id", editingMemory.id);
-          if (error)
-            console.error(
-              "Supabase update calendar error:",
-              error.message,
-              error,
-            );
+          const { error } = await client.from('calendar').update(payload).eq('id', editingMemory.id);
+          if (error) console.error('Supabase update calendar error:', error.message, error);
         } catch (err) {
-          console.warn("Supabase update calendar exception:", err);
+          console.warn('Supabase update calendar exception:', err);
         }
       }
 
       try {
         await fetch(`/api/calendar/${editingMemory.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
       } catch {
@@ -187,33 +155,23 @@ export const MemoryCalendar: React.FC = () => {
       const client = getSupabaseClient();
       if (isSupabaseConfigured() && client) {
         try {
-          const { data, error } = await client
-            .from("calendar")
-            .insert([payload])
-            .select();
+          const { data, error } = await client.from('calendar').insert([payload]).select();
           if (error) {
-            console.error(
-              "Supabase insert calendar error:",
-              error.message,
-              error,
-            );
+            console.error('Supabase insert calendar error:', error.message, error);
           } else if (data && data[0]) {
             const inserted = data[0] as unknown as CalendarMemory;
-            const synced = [
-              inserted,
-              ...memories.filter((m) => m.id !== newMem.id),
-            ];
+            const synced = [inserted, ...memories.filter((m) => m.id !== newMem.id)];
             saveMemories(synced);
           }
         } catch (err) {
-          console.warn("Supabase insert calendar exception:", err);
+          console.warn('Supabase insert calendar exception:', err);
         }
       }
 
       try {
-        await fetch("/api/calendar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        await fetch('/api/calendar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
       } catch {
@@ -223,9 +181,9 @@ export const MemoryCalendar: React.FC = () => {
 
     setIsAddModalOpen(false);
     setEditingMemory(null);
-    setTitle("");
-    setNote("");
-    setMediaUrl("");
+    setTitle('');
+    setNote('');
+    setMediaUrl('');
   };
 
   const handleDeleteMemory = async (id: number) => {
@@ -235,20 +193,15 @@ export const MemoryCalendar: React.FC = () => {
     const client = getSupabaseClient();
     if (isSupabaseConfigured() && client) {
       try {
-        const { error } = await client.from("calendar").delete().eq("id", id);
-        if (error)
-          console.error(
-            "Supabase delete calendar error:",
-            error.message,
-            error,
-          );
+        const { error } = await client.from('calendar').delete().eq('id', id);
+        if (error) console.error('Supabase delete calendar error:', error.message, error);
       } catch (err) {
-        console.warn("Supabase delete calendar exception:", err);
+        console.warn('Supabase delete calendar exception:', err);
       }
     }
 
     try {
-      await fetch(`/api/calendar/${id}`, { method: "DELETE" });
+      await fetch(`/api/calendar/${id}`, { method: 'DELETE' });
     } catch {
       // ignore
     }
@@ -261,18 +214,11 @@ export const MemoryCalendar: React.FC = () => {
   const endDate = endOfWeek(monthEnd);
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
-  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
-  const selectedMemories = memories.filter((m) =>
-    isSameDateStr(m.date, selectedDateStr),
-  );
-  const selectedGallery = galleryItems.filter((g) =>
-    isSameDateStr(g.date, selectedDateStr),
-  );
-  const selectedStories = storyEvents.filter((s) =>
-    isSameDateStr(s.date, selectedDateStr),
-  );
-  const totalItemsOnDate =
-    selectedMemories.length + selectedGallery.length + selectedStories.length;
+  const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+  const selectedMemories = memories.filter((m) => isSameDateStr(m.date, selectedDateStr));
+  const selectedGallery = galleryItems.filter((g) => isSameDateStr(g.date, selectedDateStr));
+  const selectedStories = storyEvents.filter((s) => isSameDateStr(s.date, selectedDateStr));
+  const totalItemsOnDate = selectedMemories.length + selectedGallery.length + selectedStories.length;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
@@ -286,8 +232,7 @@ export const MemoryCalendar: React.FC = () => {
           Memory Calendar
         </h1>
         <p className="text-[#5C3A4D]/80 text-sm max-w-lg mx-auto">
-          Click on any day to revisit sweet notes, gallery photos, videos, and
-          story milestones.
+          Click on any day to revisit sweet notes, gallery photos, videos, and story milestones.
         </p>
       </div>
 
@@ -297,7 +242,7 @@ export const MemoryCalendar: React.FC = () => {
           {/* Month Header Navigation */}
           <div className="flex items-center justify-between">
             <h2 className="font-serif text-xl font-bold text-[#5C3A4D]">
-              {format(currentMonth, "MMMM yyyy")}
+              {format(currentMonth, 'MMMM yyyy')}
             </h2>
             <div className="flex items-center gap-1">
               <button
@@ -317,7 +262,7 @@ export const MemoryCalendar: React.FC = () => {
 
           {/* Days of Week */}
           <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-[#5C3A4D]/80 py-2 border-b border-[#FFE4EC]">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
               <div key={d}>{d}</div>
             ))}
           </div>
@@ -325,16 +270,10 @@ export const MemoryCalendar: React.FC = () => {
           {/* Days Cells */}
           <div className="grid grid-cols-7 gap-1.5">
             {days.map((day) => {
-              const dayStr = format(day, "yyyy-MM-dd");
-              const hasMemory = memories.some((m) =>
-                isSameDateStr(m.date, dayStr),
-              );
-              const hasGallery = galleryItems.some((g) =>
-                isSameDateStr(g.date, dayStr),
-              );
-              const hasStory = storyEvents.some((s) =>
-                isSameDateStr(s.date, dayStr),
-              );
+              const dayStr = format(day, 'yyyy-MM-dd');
+              const hasMemory = memories.some((m) => isSameDateStr(m.date, dayStr));
+              const hasGallery = galleryItems.some((g) => isSameDateStr(g.date, dayStr));
+              const hasStory = storyEvents.some((s) => isSameDateStr(s.date, dayStr));
               const hasActivity = hasMemory || hasGallery || hasStory;
 
               const isSelected = isSameDay(day, selectedDate);
@@ -346,24 +285,24 @@ export const MemoryCalendar: React.FC = () => {
                   onClick={() => setSelectedDate(day)}
                   className={`h-11 sm:h-12 rounded-2xl flex flex-col items-center justify-center relative transition text-xs font-semibold ${
                     !isCurrentMonth
-                      ? "text-[#5C3A4D]/30"
+                      ? 'text-[#5C3A4D]/30'
                       : isSelected
-                        ? "bg-[#EC407A] text-white shadow-md shadow-[#EC407A]/20"
-                        : "hover:bg-[#FFE4EC] text-[#5C3A4D]"
+                      ? 'bg-[#EC407A] text-white shadow-md shadow-[#EC407A]/20'
+                      : 'hover:bg-[#FFE4EC] text-[#5C3A4D]'
                   }`}
                 >
-                  <span>{format(day, "d")}</span>
+                  <span>{format(day, 'd')}</span>
                   {hasActivity && (
                     <div className="flex items-center gap-0.5 mt-0.5">
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
-                          isSelected ? "bg-white" : "bg-[#EC407A]"
+                          isSelected ? 'bg-white' : 'bg-[#EC407A]'
                         }`}
                       />
                       {hasGallery && (
                         <span
                           className={`w-1 h-1 rounded-full ${
-                            isSelected ? "bg-pink-200" : "bg-purple-500"
+                            isSelected ? 'bg-pink-200' : 'bg-purple-500'
                           }`}
                         />
                       )}
@@ -380,19 +319,19 @@ export const MemoryCalendar: React.FC = () => {
           <div className="flex items-center justify-between border-b border-[#FFE4EC] pb-3">
             <div>
               <h3 className="font-serif text-lg font-bold text-[#5C3A4D]">
-                {format(selectedDate, "MMMM d, yyyy")}
+                {format(selectedDate, 'MMMM d, yyyy')}
               </h3>
               <p className="text-xs text-[#EC407A] font-medium">
-                {totalItemsOnDate} {totalItemsOnDate === 1 ? "item" : "items"}{" "}
-                recorded for this date
+                {totalItemsOnDate} {totalItemsOnDate === 1 ? 'item' : 'items'} recorded for this date
               </p>
             </div>
             <button
               onClick={openAddModal}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#EC407A] hover:bg-[#D81B60] text-white text-xs font-bold uppercase tracking-widest shadow-md transition"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full bg-[#EC407A] hover:bg-[#D81B60] text-white text-xs font-bold uppercase tracking-widest shadow-md transition shrink-0"
             >
               <Plus size={14} />
-              <span>Add Memory</span>
+              <span className="hidden sm:inline">Add Memory</span>
+              <span className="sm:hidden text-[11px]">Tambah</span>
             </button>
           </div>
 
@@ -410,17 +349,13 @@ export const MemoryCalendar: React.FC = () => {
                     className="bg-white/90 border border-pink-200 p-3.5 rounded-2xl space-y-1.5 shadow-sm"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#5C3A4D]">
-                        {st.title}
-                      </span>
+                      <span className="text-xs font-bold text-[#5C3A4D]">{st.title}</span>
                       <span className="px-2 py-0.5 rounded-full bg-pink-100 text-[#EC407A] text-[9px] font-extrabold">
-                        {st.category || "Story"}
+                        {st.category || 'Story'}
                       </span>
                     </div>
                     {st.description && (
-                      <p className="text-xs text-[#5C3A4D]/80 line-clamp-2">
-                        {st.description}
-                      </p>
+                      <p className="text-xs text-[#5C3A4D]/80 line-clamp-2">{st.description}</p>
                     )}
                     {st.photo_url && (
                       <img
@@ -447,7 +382,7 @@ export const MemoryCalendar: React.FC = () => {
                       key={gal.id}
                       className="relative rounded-xl overflow-hidden border border-purple-100 bg-black/5 group"
                     >
-                      {gal.type === "video" ? (
+                      {gal.type === 'video' ? (
                         <video
                           src={gal.url}
                           controls
@@ -456,7 +391,7 @@ export const MemoryCalendar: React.FC = () => {
                       ) : (
                         <img
                           src={gal.url}
-                          alt={gal.caption || "Gallery photo"}
+                          alt={gal.caption || 'Gallery photo'}
                           className="w-full h-28 object-cover rounded-xl"
                         />
                       )}
@@ -484,9 +419,7 @@ export const MemoryCalendar: React.FC = () => {
                     className="bg-[#FFE4EC]/50 border border-[#F8BBD0]/50 p-4 rounded-2xl space-y-2 relative group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#5C3A4D]">
-                        {mem.title}
-                      </span>
+                      <span className="text-xs font-bold text-[#5C3A4D]">{mem.title}</span>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => openEditModal(mem)}
@@ -504,9 +437,7 @@ export const MemoryCalendar: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                    {mem.note && (
-                      <p className="text-xs text-[#5C3A4D]/80">{mem.note}</p>
-                    )}
+                    {mem.note && <p className="text-xs text-[#5C3A4D]/80">{mem.note}</p>}
                     {mem.media_url && (
                       <img
                         src={mem.media_url}
@@ -528,6 +459,7 @@ export const MemoryCalendar: React.FC = () => {
         </div>
       </div>
 
+
       {/* Add Memory Modal */}
       <AnimatePresence>
         {isAddModalOpen && (
@@ -540,8 +472,7 @@ export const MemoryCalendar: React.FC = () => {
             >
               <div className="flex items-center justify-between border-b border-pink-100 pb-3">
                 <h3 className="font-serif text-lg font-bold text-pink-950">
-                  {editingMemory ? "Edit Memory" : "Add Memory"} for{" "}
-                  {format(selectedDate, "MMM d, yyyy")}
+                  {editingMemory ? 'Edit Memory' : 'Add Memory'} for {format(selectedDate, 'MMM d, yyyy')}
                 </h3>
                 <button
                   onClick={() => setIsAddModalOpen(false)}
@@ -586,9 +517,7 @@ export const MemoryCalendar: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <label className="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FFE4EC] hover:bg-[#F8BBD0] text-[#EC407A] text-xs font-bold transition">
                       <Plus size={14} />
-                      <span>
-                        {mediaUrl ? "Photo Selected ✓" : "Upload Photo"}
-                      </span>
+                      <span>{mediaUrl ? 'Photo Selected ✓' : 'Upload Photo'}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -596,10 +525,7 @@ export const MemoryCalendar: React.FC = () => {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           try {
-                            const url = await uploadFileWithFallback(
-                              file,
-                              "/api/upload/photos",
-                            );
+                            const url = await uploadFileWithFallback(file, '/api/upload/photos');
                             if (url) setMediaUrl(url);
                           } catch (err) {
                             console.error(err);
