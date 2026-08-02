@@ -1,43 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { TimelineEvent, GalleryItem, CalendarMemory } from "../types";
-import {
-  fetchWithFallback,
-  getLocalData,
-  setLocalData,
-  uploadFileWithFallback,
-} from "../lib/storage";
-import { isSupabaseConfigured, getSupabaseClient } from "../lib/supabase";
-import {
-  Plus,
-  Heart,
-  MapPin,
-  Calendar as CalendarIcon,
-  Trash2,
-  Edit2,
-  Sparkles,
-  Filter,
-  X,
-  ArrowUpDown,
-  Film,
-  Image as ImageIcon,
-} from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useEffect, useState } from 'react';
+import { TimelineEvent, GalleryItem, CalendarMemory } from '../types';
+import { fetchWithFallback, getLocalData, setLocalData, uploadFileWithFallback } from '../lib/storage';
+import { isSupabaseConfigured, getSupabaseClient } from '../lib/supabase';
+import { Plus, Heart, MapPin, Calendar as CalendarIcon, Trash2, Edit2, Sparkles, Filter, X, ArrowUpDown, Film, Image as ImageIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
-const STORAGE_KEY_STORIES = "sabrianisa_stories";
-const STORAGE_KEY_GALLERY = "sabrianisa_gallery";
-const STORAGE_KEY_CALENDAR = "sabrianisa_calendar";
+const STORAGE_KEY_STORIES = 'sabrianisa_stories';
+const STORAGE_KEY_GALLERY = 'sabrianisa_gallery';
+const STORAGE_KEY_CALENDAR = 'sabrianisa_calendar';
 
 interface TimelineDisplayItem {
   key: string;
   id: number;
-  source: "story" | "gallery" | "calendar";
+  source: 'story' | 'gallery' | 'calendar';
   title: string;
   date: string;
   description: string;
   category: string;
   location?: string;
   mediaUrl?: string;
-  mediaType: "photo" | "video";
+  mediaType: 'photo' | 'video';
   favorite?: number;
   originalStory?: TimelineEvent;
   originalGallery?: GalleryItem;
@@ -46,56 +28,41 @@ interface TimelineDisplayItem {
 
 export const Story: React.FC = () => {
   const [events, setEvents] = useState<TimelineEvent[]>(() =>
-    getLocalData(STORAGE_KEY_STORIES, []),
+    getLocalData(STORAGE_KEY_STORIES, [])
   );
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() =>
-    getLocalData(STORAGE_KEY_GALLERY, []),
+    getLocalData(STORAGE_KEY_GALLERY, [])
   );
-  const [calendarMemories, setCalendarMemories] = useState<CalendarMemory[]>(
-    () => getLocalData(STORAGE_KEY_CALENDAR, []),
+  const [calendarMemories, setCalendarMemories] = useState<CalendarMemory[]>(() =>
+    getLocalData(STORAGE_KEY_CALENDAR, [])
   );
 
-  const [filterCategory, setFilterCategory] = useState<string>("All");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [filterCategory, setFilterCategory] = useState<string>('All');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<TimelineEvent | null>(null);
 
   // Form states for Story Chapter
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("First Meeting");
-  const [customCategory, setCustomCategory] = useState("");
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('First Meeting');
+  const [customCategory, setCustomCategory] = useState('');
   const [isCustom, setIsCustom] = useState(false);
-  const [location, setLocation] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
+  const [location, setLocation] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
   const [favorite, setFavorite] = useState(false);
 
   const fetchAllData = () => {
-    fetchWithFallback<TimelineEvent[]>(
-      "/api/story",
-      STORAGE_KEY_STORIES,
-      [],
-      "story",
-    )
+    fetchWithFallback<TimelineEvent[]>('/api/story', STORAGE_KEY_STORIES, [], 'story')
       .then((data) => setEvents(data))
       .catch((err) => console.error(err));
 
-    fetchWithFallback<GalleryItem[]>(
-      "/api/gallery",
-      STORAGE_KEY_GALLERY,
-      [],
-      "gallery",
-    )
+    fetchWithFallback<GalleryItem[]>('/api/gallery', STORAGE_KEY_GALLERY, [], 'gallery')
       .then((data) => setGalleryItems(data))
       .catch((err) => console.error(err));
 
-    fetchWithFallback<CalendarMemory[]>(
-      "/api/calendar",
-      STORAGE_KEY_CALENDAR,
-      [],
-      "calendar",
-    )
+    fetchWithFallback<CalendarMemory[]>('/api/calendar', STORAGE_KEY_CALENDAR, [], 'calendar')
       .then((data) => setCalendarMemories(data))
       .catch((err) => console.error(err));
   };
@@ -111,14 +78,14 @@ export const Story: React.FC = () => {
 
   const openAddModal = () => {
     setEditingEvent(null);
-    setTitle("");
+    setTitle('');
     setDate(new Date().toISOString().slice(0, 10));
-    setDescription("");
-    setCategory("First Meeting");
-    setCustomCategory("");
+    setDescription('');
+    setCategory('First Meeting');
+    setCustomCategory('');
     setIsCustom(false);
-    setLocation("");
-    setPhotoUrl("");
+    setLocation('');
+    setPhotoUrl('');
     setFavorite(false);
     setIsModalOpen(true);
   };
@@ -127,63 +94,51 @@ export const Story: React.FC = () => {
     setEditingEvent(ev);
     setTitle(ev.title);
     setDate(ev.date);
-    setDescription(ev.description || "");
-    const currentCat = ev.category || "First Meeting";
+    setDescription(ev.description || '');
+    const currentCat = ev.category || 'First Meeting';
     setCategory(currentCat);
     setCustomCategory(currentCat);
-    setIsCustom(
-      !defaultCategories.includes(currentCat) &&
-        !dynamicCategories.includes(currentCat),
-    );
-    setLocation(ev.location || "");
-    setPhotoUrl(ev.photo_url || "");
+    setIsCustom(!defaultCategories.includes(currentCat) && !dynamicCategories.includes(currentCat));
+    setLocation(ev.location || '');
+    setPhotoUrl(ev.photo_url || '');
     setFavorite(ev.favorite === 1);
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalCategory =
-      isCustom && customCategory.trim()
-        ? customCategory.trim()
-        : category === "CUSTOM_OPTION" && customCategory.trim()
-          ? customCategory.trim()
-          : category;
+    const finalCategory = (isCustom && customCategory.trim())
+      ? customCategory.trim()
+      : (category === 'CUSTOM_OPTION' && customCategory.trim() ? customCategory.trim() : category);
 
     const payload = {
       title,
       date,
       description,
-      category: finalCategory || "Memory",
+      category: finalCategory || 'Memory',
       location,
       photo_url: photoUrl,
       favorite: favorite ? 1 : 0,
     };
 
     if (editingEvent) {
-      const updated = events.map((ev) =>
-        ev.id === editingEvent.id ? { ...ev, ...payload } : ev,
-      );
+      const updated = events.map((ev) => (ev.id === editingEvent.id ? { ...ev, ...payload } : ev));
       saveEvents(updated);
 
       const client = getSupabaseClient();
       if (isSupabaseConfigured() && client) {
         try {
-          const { error } = await client
-            .from("story")
-            .update(payload)
-            .eq("id", editingEvent.id);
-          if (error)
-            console.error("Supabase update story error:", error.message, error);
+          const { error } = await client.from('story').update(payload).eq('id', editingEvent.id);
+          if (error) console.error('Supabase update story error:', error.message, error);
         } catch (err) {
-          console.warn("Supabase update story exception:", err);
+          console.warn('Supabase update story exception:', err);
         }
       }
 
       try {
         await fetch(`/api/story/${editingEvent.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
       } catch {
@@ -197,29 +152,23 @@ export const Story: React.FC = () => {
       const client = getSupabaseClient();
       if (isSupabaseConfigured() && client) {
         try {
-          const { data, error } = await client
-            .from("story")
-            .insert([payload])
-            .select();
+          const { data, error } = await client.from('story').insert([payload]).select();
           if (error) {
-            console.error("Supabase insert story error:", error.message, error);
+            console.error('Supabase insert story error:', error.message, error);
           } else if (data && data[0]) {
             const inserted = data[0] as unknown as TimelineEvent;
-            const synced = [
-              inserted,
-              ...events.filter((e) => e.id !== newEv.id),
-            ];
+            const synced = [inserted, ...events.filter((e) => e.id !== newEv.id)];
             saveEvents(synced);
           }
         } catch (err) {
-          console.warn("Supabase insert story exception:", err);
+          console.warn('Supabase insert story exception:', err);
         }
       }
 
       try {
-        await fetch("/api/story", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        await fetch('/api/story', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
       } catch {
@@ -236,13 +185,13 @@ export const Story: React.FC = () => {
     const client = getSupabaseClient();
     if (isSupabaseConfigured() && client) {
       try {
-        await client.from("story").delete().eq("id", id);
+        await client.from('story').delete().eq('id', id);
       } catch (err) {
-        console.warn("Supabase delete story error:", err);
+        console.warn('Supabase delete story error:', err);
       }
     }
     try {
-      await fetch(`/api/story/${id}`, { method: "DELETE" });
+      await fetch(`/api/story/${id}`, { method: 'DELETE' });
     } catch {}
   };
 
@@ -254,13 +203,13 @@ export const Story: React.FC = () => {
     const client = getSupabaseClient();
     if (isSupabaseConfigured() && client) {
       try {
-        await client.from("gallery").delete().eq("id", id);
+        await client.from('gallery').delete().eq('id', id);
       } catch (err) {
-        console.warn("Supabase delete gallery error:", err);
+        console.warn('Supabase delete gallery error:', err);
       }
     }
     try {
-      await fetch(`/api/gallery/${id}`, { method: "DELETE" });
+      await fetch(`/api/gallery/${id}`, { method: 'DELETE' });
     } catch {}
   };
 
@@ -272,13 +221,13 @@ export const Story: React.FC = () => {
     const client = getSupabaseClient();
     if (isSupabaseConfigured() && client) {
       try {
-        await client.from("calendar").delete().eq("id", id);
+        await client.from('calendar').delete().eq('id', id);
       } catch (err) {
-        console.warn("Supabase delete calendar error:", err);
+        console.warn('Supabase delete calendar error:', err);
       }
     }
     try {
-      await fetch(`/api/calendar/${id}`, { method: "DELETE" });
+      await fetch(`/api/calendar/${id}`, { method: 'DELETE' });
     } catch {}
   };
 
@@ -287,30 +236,26 @@ export const Story: React.FC = () => {
     ...events.map((ev) => ({
       key: `story-${ev.id}`,
       id: ev.id,
-      source: "story" as const,
+      source: 'story' as const,
       title: ev.title,
-      date: ev.date || "",
-      description: ev.description || "",
-      category: ev.category || "Story Chapter",
-      location: ev.location || "",
-      mediaUrl: ev.photo_url || "",
-      mediaType: (ev.photo_url?.match(/\.(mp4|webm|mov|ogg)$/i)
-        ? "video"
-        : "photo") as "photo" | "video",
+      date: ev.date || '',
+      description: ev.description || '',
+      category: ev.category || 'Story Chapter',
+      location: ev.location || '',
+      mediaUrl: ev.photo_url || '',
+      mediaType: (ev.photo_url?.match(/\.(mp4|webm|mov|ogg)$/i) ? 'video' : 'photo') as 'photo' | 'video',
       favorite: ev.favorite,
       originalStory: ev,
     })),
     ...galleryItems.map((g) => ({
       key: `gallery-${g.id}`,
       id: g.id,
-      source: "gallery" as const,
-      title:
-        g.caption ||
-        (g.type === "video" ? "Gallery Video 🎬" : "Gallery Photo 📷"),
-      date: g.date || "",
-      description: g.caption || "",
-      category: g.type === "video" ? "Gallery Video" : "Gallery Photo",
-      location: "",
+      source: 'gallery' as const,
+      title: g.caption || (g.type === 'video' ? 'Gallery Video 🎬' : 'Gallery Photo 📷'),
+      date: g.date || '',
+      description: g.caption || '',
+      category: g.type === 'video' ? 'Gallery Video' : 'Gallery Photo',
+      location: '',
       mediaUrl: g.url,
       mediaType: g.type,
       favorite: g.favorite,
@@ -319,49 +264,44 @@ export const Story: React.FC = () => {
     ...calendarMemories.map((c) => ({
       key: `calendar-${c.id}`,
       id: c.id,
-      source: "calendar" as const,
-      title: c.title || "Calendar Memory 📅",
-      date: c.date || "",
-      description: c.note || "",
-      category: c.event_type || "Calendar Memory",
-      location: "",
-      mediaUrl: c.media_url || "",
-      mediaType: (c.media_url?.match(/\.(mp4|webm|mov|ogg)$/i)
-        ? "video"
-        : "photo") as "photo" | "video",
+      source: 'calendar' as const,
+      title: c.title || 'Calendar Memory 📅',
+      date: c.date || '',
+      description: c.note || '',
+      category: c.event_type || 'Calendar Memory',
+      location: '',
+      mediaUrl: c.media_url || '',
+      mediaType: (c.media_url?.match(/\.(mp4|webm|mov|ogg)$/i) ? 'video' : 'photo') as 'photo' | 'video',
       favorite: 0,
       originalCalendar: c,
     })),
   ];
 
   const defaultCategories = [
-    "First Meeting",
-    "First Date",
-    "Anniversary",
-    "Trip",
-    "Special Memories",
-    "Gallery Photo",
-    "Gallery Video",
+    'First Meeting',
+    'First Date',
+    'Anniversary',
+    'Trip',
+    'Special Memories',
+    'Gallery Photo',
+    'Gallery Video',
   ];
 
   const dynamicCategories = Array.from(
-    new Set([
-      ...defaultCategories,
-      ...combinedItems.map((i) => i.category).filter(Boolean),
-    ]),
+    new Set([...defaultCategories, ...combinedItems.map((i) => i.category).filter(Boolean)])
   );
 
-  const filterCategories = ["All", ...dynamicCategories];
+  const filterCategories = ['All', ...dynamicCategories];
 
   const filteredItems = combinedItems.filter((item) => {
-    if (filterCategory === "All") return true;
+    if (filterCategory === 'All') return true;
     return item.category === filterCategory;
   });
 
   const sortedItems = [...filteredItems].sort((a, b) => {
     const timeA = a.date ? new Date(a.date).getTime() : 0;
     const timeB = b.date ? new Date(b.date).getTime() : 0;
-    return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
+    return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
   });
 
   return (
@@ -376,23 +316,22 @@ export const Story: React.FC = () => {
           Our Story Timeline
         </h1>
         <p className="text-[#5C3A4D]/80 text-sm max-w-lg mx-auto">
-          Every chapter, photo, video, and magical memory we have shared
-          together, sorted by date.
+          Every chapter, photo, video, and magical memory we have shared together, sorted by date.
         </p>
       </div>
 
       {/* Filter and Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white/60 backdrop-blur-md p-3 sm:p-4 rounded-3xl border border-white/80 shadow-sm">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-          <Filter size={14} className="text-[#EC407A] ml-2 mr-1 shrink-0" />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/60 backdrop-blur-md p-3 sm:p-4 rounded-3xl border border-white/80 shadow-sm">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 sm:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden max-w-full">
+          <Filter size={14} className="text-[#EC407A] ml-1 mr-0.5 shrink-0" />
           {filterCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => setFilterCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shrink-0 transition ${
+              className={`px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider shrink-0 transition whitespace-nowrap ${
                 filterCategory === cat
-                  ? "bg-[#EC407A] text-white shadow-md shadow-[#EC407A]/20"
-                  : "bg-white/80 text-[#5C3A4D] hover:bg-[#FFE4EC]"
+                  ? 'bg-[#EC407A] text-white shadow-md shadow-[#EC407A]/20'
+                  : 'bg-white/80 text-[#5C3A4D] hover:bg-[#FFE4EC]'
               }`}
             >
               {cat}
@@ -400,28 +339,24 @@ export const Story: React.FC = () => {
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+        <div className="flex items-center justify-end gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-pink-100/60">
           <button
-            onClick={() =>
-              setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-            }
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/80 hover:bg-[#FFE4EC] text-[#5C3A4D] text-xs font-bold transition border border-pink-100 shadow-sm shrink-0"
+            onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-full bg-white/80 hover:bg-[#FFE4EC] text-[#5C3A4D] text-xs font-bold transition border border-pink-100 shadow-xs shrink-0"
             title="Urutkan Berdasarkan Tanggal"
           >
             <ArrowUpDown size={14} className="text-[#EC407A]" />
-            <span>
-              {sortOrder === "asc"
-                ? "Urut Tanggal: Terlama → Terbaru"
-                : "Urut Tanggal: Terbaru → Terlama"}
-            </span>
+            <span className="hidden sm:inline">{sortOrder === 'asc' ? 'Urut Tanggal: Terlama → Terbaru' : 'Urut Tanggal: Terbaru → Terlama'}</span>
+            <span className="sm:hidden text-[11px] font-semibold">{sortOrder === 'asc' ? 'Terlama' : 'Terbaru'}</span>
           </button>
 
           <button
             onClick={openAddModal}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#EC407A] hover:bg-[#D81B60] text-white text-xs font-bold uppercase tracking-widest shadow-md transition transform active:scale-95 shrink-0"
+            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-[#EC407A] hover:bg-[#D81B60] text-white rounded-full font-bold shadow-md uppercase tracking-wider text-xs transition shrink-0"
           >
             <Plus size={16} />
-            <span>Add Chapter</span>
+            <span className="hidden sm:inline">Add Chapter</span>
+            <span className="sm:hidden text-[11px]">Tambah</span>
           </button>
         </div>
       </div>
@@ -447,15 +382,12 @@ export const Story: React.FC = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5 }}
                   className={`relative flex flex-col sm:flex-row items-center ${
-                    isEven ? "sm:flex-row-reverse" : ""
+                    isEven ? 'sm:flex-row-reverse' : ''
                   }`}
                 >
                   {/* Center Heart Node */}
                   <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white border-2 border-[#EC407A] shadow-md flex items-center justify-center text-[#EC407A] z-10">
-                    <Heart
-                      size={14}
-                      className={item.favorite ? "fill-[#EC407A]" : ""}
-                    />
+                    <Heart size={14} className={item.favorite ? 'fill-[#EC407A]' : ''} />
                   </div>
 
                   {/* Event Card Content */}
@@ -464,7 +396,7 @@ export const Story: React.FC = () => {
                       {/* Media Display */}
                       {item.mediaUrl && (
                         <div className="w-full rounded-2xl overflow-hidden mb-4 bg-[#FFE4EC]/50">
-                          {item.mediaType === "video" ? (
+                          {item.mediaType === 'video' ? (
                             <div className="relative bg-black/90 rounded-2xl overflow-hidden">
                               <video
                                 src={item.mediaUrl}
@@ -483,12 +415,9 @@ export const Story: React.FC = () => {
                                 alt={item.title}
                                 className="w-full h-52 object-cover rounded-2xl group-hover:scale-105 transition duration-500"
                               />
-                              {item.source === "gallery" && (
+                              {item.source === 'gallery' && (
                                 <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-black/60 text-white text-[10px] font-bold flex items-center gap-1 backdrop-blur-sm">
-                                  <ImageIcon
-                                    size={12}
-                                    className="text-pink-300"
-                                  />
+                                  <ImageIcon size={12} className="text-pink-300" />
                                   <span>Foto Galeri</span>
                                 </div>
                               )}
@@ -500,14 +429,14 @@ export const Story: React.FC = () => {
                       <div className="flex items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="px-3 py-1 rounded-full bg-[#FFE4EC] text-[#EC407A] text-[10px] font-bold tracking-widest uppercase">
-                            {item.category || "Memory"}
+                            {item.category || 'Memory'}
                           </span>
-                          {item.source === "gallery" && (
+                          {item.source === 'gallery' && (
                             <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-extrabold uppercase">
                               Galeri
                             </span>
                           )}
-                          {item.source === "calendar" && (
+                          {item.source === 'calendar' && (
                             <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-extrabold uppercase">
                               Kalender
                             </span>
@@ -515,7 +444,7 @@ export const Story: React.FC = () => {
                         </div>
 
                         <div className="flex items-center gap-1.5 text-[#EC407A]">
-                          {item.source === "story" && item.originalStory && (
+                          {item.source === 'story' && item.originalStory && (
                             <button
                               onClick={() => openEditModal(item.originalStory!)}
                               className="p-1 hover:bg-[#FFE4EC] rounded-full transition text-[#EC407A]"
@@ -526,12 +455,9 @@ export const Story: React.FC = () => {
                           )}
                           <button
                             onClick={() => {
-                              if (item.source === "story")
-                                handleDeleteStory(item.id);
-                              else if (item.source === "gallery")
-                                handleDeleteGallery(item.id);
-                              else if (item.source === "calendar")
-                                handleDeleteCalendar(item.id);
+                              if (item.source === 'story') handleDeleteStory(item.id);
+                              else if (item.source === 'gallery') handleDeleteGallery(item.id);
+                              else if (item.source === 'calendar') handleDeleteCalendar(item.id);
                             }}
                             className="p-1 hover:bg-[#FFE4EC] rounded-full transition text-rose-500"
                             title="Delete Item"
@@ -584,7 +510,7 @@ export const Story: React.FC = () => {
             >
               <div className="flex items-center justify-between border-b border-pink-100 pb-3">
                 <h3 className="font-serif text-xl font-bold text-pink-950">
-                  {editingEvent ? "Edit Story Chapter" : "Add Story Chapter"}
+                  {editingEvent ? 'Edit Story Chapter' : 'Add Story Chapter'}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -633,12 +559,12 @@ export const Story: React.FC = () => {
                           const nextState = !isCustom;
                           setIsCustom(nextState);
                           if (nextState) {
-                            setCustomCategory("");
+                            setCustomCategory('');
                           }
                         }}
                         className="text-[10px] font-bold text-[#EC407A] hover:underline"
                       >
-                        {isCustom ? "← Choose Preset" : "+ Custom Category"}
+                        {isCustom ? '← Choose Preset' : '+ Custom Category'}
                       </button>
                     </div>
 
@@ -646,9 +572,9 @@ export const Story: React.FC = () => {
                       <select
                         value={category}
                         onChange={(e) => {
-                          if (e.target.value === "CUSTOM_OPTION") {
+                          if (e.target.value === 'CUSTOM_OPTION') {
                             setIsCustom(true);
-                            setCustomCategory("");
+                            setCustomCategory('');
                           } else {
                             setCategory(e.target.value);
                           }
@@ -660,9 +586,7 @@ export const Story: React.FC = () => {
                             {cat}
                           </option>
                         ))}
-                        <option value="CUSTOM_OPTION">
-                          + Custom Category / Kategori Baru...
-                        </option>
+                        <option value="CUSTOM_OPTION">+ Custom Category / Kategori Baru...</option>
                       </select>
                     ) : (
                       <input
@@ -697,9 +621,7 @@ export const Story: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <label className="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FFE4EC] hover:bg-[#F8BBD0] text-[#EC407A] text-xs font-bold transition">
                       <Plus size={14} />
-                      <span>
-                        {photoUrl ? "Photo Uploaded ✓" : "Upload Chapter Photo"}
-                      </span>
+                      <span>{photoUrl ? 'Photo Uploaded ✓' : 'Upload Chapter Photo'}</span>
                       <input
                         type="file"
                         accept="image/*,video/*"
@@ -707,14 +629,9 @@ export const Story: React.FC = () => {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           try {
-                            const isVideo = file.type.startsWith("video/");
-                            const endpoint = isVideo
-                              ? "/api/upload/videos"
-                              : "/api/upload/photos";
-                            const url = await uploadFileWithFallback(
-                              file,
-                              endpoint,
-                            );
+                            const isVideo = file.type.startsWith('video/');
+                            const endpoint = isVideo ? '/api/upload/videos' : '/api/upload/photos';
+                            const url = await uploadFileWithFallback(file, endpoint);
                             if (url) setPhotoUrl(url);
                           } catch (err) {
                             console.error(err);
@@ -752,10 +669,7 @@ export const Story: React.FC = () => {
                     onChange={(e) => setFavorite(e.target.checked)}
                     className="rounded text-pink-500 focus:ring-pink-400"
                   />
-                  <label
-                    htmlFor="fav"
-                    className="text-xs font-medium text-pink-900"
-                  >
+                  <label htmlFor="fav" className="text-xs font-medium text-pink-900">
                     Mark as Favorite Memory ❤️
                   </label>
                 </div>
@@ -783,3 +697,4 @@ export const Story: React.FC = () => {
     </div>
   );
 };
+
